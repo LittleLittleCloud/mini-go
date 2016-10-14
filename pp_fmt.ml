@@ -1,4 +1,4 @@
-(* File pp2.ml *)
+(* File pp_fmt.ml *)
 open Ast
 
 let indent = 2
