@@ -1,7 +1,35 @@
 (* File pp.ml *)
 open Ast
 
-let rec pp_stmt s = match s with
+let rec pp_prog s = match s with
+  | Prog (x, y)       -> String.concat "" ["Prog(["; (pp_proc_list x); "],"; (pp_stmt y); ")"]
+
+and pp_proc s = match s with
+  | Proc (x, y, z, w) -> String.concat "" ["Proc("; x; ",["; (pp_param_list y); "],"; (pp_types_option z); ","; (pp_stmt w); ")"]
+
+and pp_proc_list s = match s with
+  | []                -> ""
+  | hd::tl            -> String.concat " " [pp_proc hd; pp_proc_list tl]
+
+and pp_param_list s = match s with
+  | []                -> ""
+  | (ex,ty)::tl       -> String.concat " " [pp_exp ex; pp_types ty; pp_param_list tl]
+
+and pp_types s = match s with
+  | TyInt             -> "Int"
+  | TyBool            -> "Bool"
+  | TyChan (x)        -> "Chan " ^ (pp_types x)
+  | TyFunc (x, y)     -> "Func [" ^ (pp_types_list x) ^ "] " ^ (pp_types y)
+
+and pp_types_list s = match s with
+  | []                -> ""
+  | hd::tl            -> String.concat " " [pp_types hd; pp_types_list tl]
+
+and pp_types_option s = match s with
+  | Some(x)           -> pp_types x
+  | None              -> ""
+
+and pp_stmt s = match s with
   | Seq (x, y)        -> String.concat "" ["Seq("; pp_stmt x; ","; pp_stmt y; ")"]
   | Go (x)            -> String.concat "" ["Go("; pp_stmt x; ")"]
   | Transmit (x, y)   -> String.concat "" ["Transmit("; x; ","; pp_exp y; ")"]
