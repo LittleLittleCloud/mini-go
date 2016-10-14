@@ -1,6 +1,6 @@
 (* File calc.ml *)
 open Ast
-open Pp
+open Pp2
 
 let print_channel ch =
   let lexbuf = Lexing.from_channel ch in
