@@ -17,19 +17,17 @@ parse:
 ;
 prog:
   | proc_list block               { Prog ($1, $2) }
-  | block                         { Prog ([], $1) }
 ;
 proc_list:
-  | proc                          { [$1] }
+  |                               { [] }    
   | proc proc_list                { [$1] @ $2 }
 ;
 proc:
   | FUNC ID LPAREN param RPAREN types block { Proc ($2, $4, Some($6), $7) }
   | FUNC ID LPAREN param RPAREN block       { Proc ($2, $4, None, $6) }
-  | FUNC ID LPAREN RPAREN types block       { Proc ($2, [], Some($5), $6) }
-  | FUNC ID LPAREN RPAREN block             { Proc ($2, [], None, $5) }
 ;
 param:
+  |                                 { [] }  
   | vars types                      { [($1, $2)] }
   | vars types COMMA param          { [($1, $2)] @ $4 }
 ;
@@ -100,4 +98,11 @@ types:
   | INT                           { TyInt }
   | BOOL                          { TyBool }
   | CHAN_INT                      { TyChan TyInt }
+  | LPAREN type_list RPAREN LPAREN types RPAREN { TyFunc ($2, $5) }
+;
+
+type_list:
+  |                       { [] }
+  | types                 { [$1] }
+  | types COMMA type_list { [$1] @ $3 }
 ;

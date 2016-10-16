@@ -4,8 +4,10 @@
     exception SyntaxError of string
 }
 
+let digit = ['0'-'9']
+
 let white = [' ' '\t' '\r' '\n']
-let int   = ['0'-'9']['0'-'9']*
+let int   = ['1'-'9'](digit)* | '0' 
 let id    = ['a'-'z']['a'-'z' '0'-'9']*
 
 rule token = parse
