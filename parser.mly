@@ -79,6 +79,7 @@ factor:
   | NOT factor                    { Not ($2) }
   | LPAREN bexp RPAREN            { $2 }
   | ID LPAREN arg RPAREN          { FuncExp ($1, $3) }
+  | ID LPAREN RPAREN              { FuncExp ($1, []) }
 ;
 arg:
   | bexp                          { [$1] }
