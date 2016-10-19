@@ -49,7 +49,6 @@ statement:
   | IF bexp block ELSE block      { ITE ($2, $3, $5) }
   | RETURN bexp                   { Return ($2) }
   | ID LPAREN arg RPAREN          { FuncCall ($1, $3) }
-  | ID LPAREN RPAREN              { FuncCall ($1, []) }
   | PRINT bexp                    { Print ($2) }
 ;
 bexp:
@@ -82,9 +81,9 @@ factor:
   | NOT factor                    { Not ($2) }
   | LPAREN bexp RPAREN            { $2 }
   | ID LPAREN arg RPAREN          { FuncExp ($1, $3) }
-  | ID LPAREN RPAREN              { FuncExp ($1, []) }
 ;
 arg:
+  |                               { [] }
   | bexp                          { [$1] }
   | bexp COMMA arg                { [$1] @ $3 }
 ;
