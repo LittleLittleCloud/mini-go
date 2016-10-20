@@ -101,11 +101,4 @@ types:
   | INT                           { TyInt }
   | BOOL                          { TyBool }
   | CHAN_INT                      { TyChan TyInt }
-  | LPAREN type_list RPAREN LPAREN types RPAREN { TyFunc ($2, $5) }
-;
-
-type_list:
-  |                       { [] }
-  | types                 { [$1] }
-  | types COMMA type_list { [$1] @ $3 }
 ;
