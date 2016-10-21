@@ -105,9 +105,9 @@ let rec inferTyExp env e = match e with
                   | Some t -> Some t
                   | None -> None
                 end
-  | FuncExp (s,el) -> let r = lookup s env in
+  | FuncExp (s,el) -> let r1 = lookup s env in
                 begin
-                  match  r with
+                  match  r1 with
                   | Some TyFunc(l,r) -> if List.length l==List.length el &&
                                       List.for_all2 (fun a b->match (a,inferTyExp env b)with
                                                               | (t1,Some t2) -> eqTy t1 t2
@@ -129,9 +129,9 @@ let rec inferTyExp env e = match e with
 let rec typeCheckStmt env stmt = match stmt with
   | Decl (v,e) -> let r = inferTyExp env e in
                   begin
-                   match r with
-                   | None -> None
-                   | Some t -> Some (update (v,t) env)
+                    match r with
+                    | None -> None
+                    | Some t -> Some (update (v,t) env)
                   end
   | Assign (v,e) -> begin
                     match (lookup v env) with
@@ -146,7 +146,7 @@ let rec typeCheckStmt env stmt = match stmt with
   | Transmit (s,e)  ->  let r=lookup s env in
                         begin
                           match r with
-                          | Some t1   ->  let t2 = inferTyExp env e in
+                          | Some (TyChan t1)   ->  let t2 = inferTyExp env e in
                                           begin
                                             match t2 with
                                              | None -> None
@@ -168,8 +168,59 @@ let rec typeCheckStmt env stmt = match stmt with
                                               end
                               | _ -> None    
                         end  
-  | _ -> None
+  | Go s            ->  let e2 = typeCheckStmt env s in     (*can re-decl in this block*)
+                        begin
+                          match e2 with
+                          | Some e3 -> Some env
+                          | _ -> None
+                        end       
+  | RcvStmt s       ->  let s1=lookup s env in 
+                        begin
+                          match s1 with
+                          | Some e1 -> Some env
+                          | _ -> None
+                        end
+  | DeclChan s      ->  Some (update (s,TyChan TyInt) env)
+  | While (e,s)     ->  let r=(inferTyExp env e,typeCheckStmt env s) in 
+                        begin
+                          match r with
+                          | (Some TyBool,Some s2) -> Some env
+                          | _ -> None
+                        end
+  | ITE (e,s1,s2)   ->  let r =(inferTyExp env e,typeCheckStmt env s1,typeCheckStmt env s2) in 
+                        begin
+                          match r with
+                          | (Some TyBool,Some _,Some _) -> Some env
+                          | _ -> None
+                        end
+  | Return e        ->  let r = (inferTyExp env e, lookup "1FUNCALL" env) in 
+                        begin
+                          match r with
+                          | (Some t1,Some t2) ->  if eqTy t1 t2 
+                                                  then Some env
+                                                  else None     
+                          | _ -> None
+                        end
+  | FuncCall (s,el)->  let r1 = (lookup s env) in 
+                        begin
+                          match r1 with
+                          | Some TyFunc(l,r) -> if List.length l==List.length el &&
+                                      List.for_all2 (fun a b->match (a,inferTyExp env b)with
+                                                              | (t1,Some t2) -> eqTy t1 t2
+                                                              | _       -> false  )
+                                                    l el
+                                    then Some env
+                                    else None
+                          | _                 ->  None
+                        end
+  | Print e         ->  let r = inferTyExp env e in 
+                        begin
+                          match r with
+                          | Some _ -> Some env
+                          | _ -> None
+                        end
 (*
+
 What's still missing are implementations for 
 
 (1) collection of type signatures from functions (procedures)
