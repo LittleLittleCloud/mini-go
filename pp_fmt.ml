@@ -22,8 +22,11 @@ and pp_types s = match s with
   | TyInt             -> "Int"
   | TyBool            -> "Bool"
   | TyChan (x)        -> "Chan " ^ (pp_types x)
-  | TyFunc (x, y)     -> "Func (" ^ (pp_types_list x) ^ ") " ^ (pp_types y)
-
+  | TyFunc (x, y)     -> begin
+                          match y with
+                          | Some t -> "Func (" ^ (pp_types_list x) ^ ") " ^ (pp_types t)
+                          | None ->"Func (" ^ (pp_types_list x) ^ ") " ^ "None"
+                        end
 and pp_types_list s = match s with
   | []                -> ""
   | hd::[]            -> pp_types hd

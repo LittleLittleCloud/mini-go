@@ -5,11 +5,16 @@ let rec eqTy t1 t2 = match (t1,t2) with
   | (TyInt, TyInt) -> true
   | (TyBool, TyBool) -> true
   | (TyChan t1, TyChan t2) -> eqTy t1 t2
-  | (TyFunc (ts1, t1), TyFunc (ts2, t2)) -> eqTy t1 t2 &&
-                                            (List.length ts1 == List.length ts2) &&
-                                            (List.for_all (fun (t1,t2) -> eqTy t1 t2) (List.combine ts1 ts2))    
-       
-
+  | (TyFunc (ts1, s1), TyFunc (ts2,s2)) -> 
+                                          begin
+                                            match (s1,s2) with
+                                          | (Some t1,Some t2 ) -> (eqTy t1 t2 &&
+                                                                  (List.length ts1 == List.length ts2) &&
+                                                                  (List.for_all (fun (t1,t2) -> eqTy t1 t2) (List.combine ts1 ts2))   ) 
+                                          | (None,None) -> true
+                                          | _           ->false
+                                          end
+| _ ->                                    false
 (*
 We assume that the type environment is represented as a list of pairs of variables and types
 where variables are represented as strings.
@@ -19,7 +24,7 @@ It's actual type is actually slightly more general:
 'a -> ('a * 'b) list -> 'b option
 
  *)
-let lookup el lst = try (Some (snd (List.find (fun (el2,_) -> el == el2) lst))) with
+let lookup el lst = try (Some (snd (List.find (fun (el2,_) -> el = el2) lst))) with
                     | Not_found -> None
                           
 let update el env= let nenv=List.filter (fun a ->fst a<>fst el) env in el::nenv
@@ -113,7 +118,12 @@ let rec inferTyExp env e = match e with
                                                               | (t1,Some t2) -> eqTy t1 t2
                                                               | _       -> false  )
                                                     l el
-                                    then Some r
+                                    then 
+                                    begin        
+                                      match r with
+                                      | Some t1 -> r
+                                      | None -> None
+                                    end
                                     else None
                   | _           ->  None
                 end 
@@ -204,7 +214,7 @@ let rec typeCheckStmt env stmt = match stmt with
   | FuncCall (s,el)->  let r1 = (lookup s env) in 
                         begin
                           match r1 with
-                          | Some TyFunc(l,r) -> if List.length l==List.length el &&
+                          | Some (TyFunc(l,r)) -> if List.length l==List.length el &&
                                       List.for_all2 (fun a b->match (a,inferTyExp env b)with
                                                               | (t1,Some t2) -> eqTy t1 t2
                                                               | _       -> false  )
@@ -219,7 +229,64 @@ let rec typeCheckStmt env stmt = match stmt with
                           | Some _ -> Some env
                           | _ -> None
                         end
+
+let rec typeCollectProc env proc =match proc with
+| Proc (s,lst,None,stmt) -> 
+                        let tmp v e=
+                        begin
+                          match v with
+                          | (Var s,t) -> update (s,t) e
+                          | _ -> e
+                        end
+                        in
+                        let e1=List.fold_right tmp lst env in 
+                        let tylst=List.map (fun x->snd x) lst in
+                        let e2=update (s,TyFunc(tylst,None)) e1 in 
+                        let r=typeCheckStmt e2 stmt in 
+                        begin
+                          match r with
+                          | Some _ -> Some (update (s,TyFunc(tylst,None)) env)
+                          | _ ->  None
+                        end
+| Proc (s,lst,Some ty,stmt) ->  
+                        let tmp v e=
+                        begin
+                          match v with
+                          | (Var s,t) -> update (s,t) e
+                          | _ -> e
+                        end
+                        in
+                        let e1=List.fold_right tmp lst env in 
+                        let tylst=List.map (fun x->snd x) lst in
+                        let e2=update (s,TyFunc(tylst,Some ty)) e1 in 
+                        let e3 = update ("1FUNCALL",ty) e2 in
+                        let r=typeCheckStmt e3 stmt in 
+                        begin
+                          match r with
+                          | Some t -> Some (update (s,TyFunc(tylst,Some ty)) env)
+                          | _ -> None
+                        end
+
+let rec checkProg env prog=match prog with
+| Prog(lst,stmt) -> let tmp p e=let e1=typeCollectProc e p in 
+                                begin
+                                  match e1 with
+                                  | Some e2 -> List.fold_right update e2 e
+                                  | _ -> []
+                                end
+                    in let l1=List.fold_right tmp lst env in
+                    let r=typeCheckStmt l1 stmt in
+                    begin
+                      match r with
+                      | Some t -> r
+                      | None   ->r
+                    end
+
 (*
+
+                      | _ -> expr2
+                    end
+                      
 
 What's still missing are implementations for 
 

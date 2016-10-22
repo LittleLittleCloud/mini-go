@@ -67,7 +67,7 @@ aexp:
   | term                          { $1 }
 ;
 term:
-  | factor MULTIPLY term          { Times ($1, $3) }
+  | term MULTIPLY term          { Times ($1, $3) }
   | factor DIVIDE term            { Division ($1, $3) }
   | factor                        { $1 }
 ;
@@ -78,6 +78,7 @@ factor:
   | LARROW ID                     { RcvExp ($2) }
   | NOT factor                    { Not ($2) }
   | LPAREN bexp RPAREN            { $2 }
+  | ID LPAREN RPAREN              {FuncExp($1,[])}
   | ID LPAREN arg RPAREN          { FuncExp ($1, $3) }
 ;
 arg:
@@ -98,7 +99,9 @@ types:
   | INT                           { TyInt }
   | BOOL                          { TyBool }
   | CHAN_INT                      { TyChan TyInt }
-  | LPAREN type_list RPAREN LPAREN types RPAREN { TyFunc ($2, $5) }
+  | LPAREN type_list RPAREN LPAREN types RPAREN { TyFunc ($2, Some($5)) }
+  | LPAREN type_list RPAREN LPAREN RPAREN { TyFunc ($2, None) }
+
 ;
 
 type_list:
