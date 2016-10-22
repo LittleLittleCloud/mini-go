@@ -27,15 +27,18 @@ proc:
   | FUNC ID LPAREN param RPAREN block       { Proc ($2, $4, None, $6) }
 ;
 param:
-  |                                 { [] }  
-  | vars types                      { [($1, $2)] }
-  | vars types COMMA param          { [($1, $2)] @ $4 }
+  |                               { [] }  
+  | vars types                    { [($1, $2)] }
+  | vars types COMMA param        { [($1, $2)] @ $4 }
 ;
 block:
-  | LBRACE statement RBRACE       { $2 }
+  | LBRACE statement_list RBRACE  { $2 }
+;
+statement_list:
+  | statement                               { $1 }
+  | statement SEMICOLON statement_list      { Seq ($1, $3) }
 ;
 statement:
-  | statement SEMICOLON statement { Seq ($1, $3) }
   | GO block                      { Go ($2) }
   | ID LARROW aexp                { Transmit ($1, $3) }
   | LARROW ID                     { RcvStmt ($2) }
@@ -46,7 +49,6 @@ statement:
   | IF bexp block ELSE block      { ITE ($2, $3, $5) }
   | RETURN bexp                   { Return ($2) }
   | ID LPAREN arg RPAREN          { FuncCall ($1, $3) }
-  | ID LPAREN RPAREN              { FuncCall ($1, []) }
   | PRINT bexp                    { Print ($2) }
 ;
 bexp:
@@ -82,6 +84,7 @@ factor:
   | ID LPAREN arg RPAREN          { FuncExp ($1, $3) }
 ;
 arg:
+  |                               { [] }
   | bexp                          { [$1] }
   | bexp COMMA arg                { [$1] @ $3 }
 ;
