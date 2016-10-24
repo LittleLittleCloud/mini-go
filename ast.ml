@@ -7,7 +7,7 @@ and proc = Proc of string * ((exp * types) list) * (types option) * stmt
 and types = TyInt
            | TyBool
            | TyChan of types
-           | TyFunc of (types list * types)
+           | TyFunc of (types list * (types option))
                                                                        
 and stmt = Seq of stmt * stmt
           | Go of stmt
