@@ -7,7 +7,7 @@ and proc = Proc of string * ((exp * types) list) * (types option) * stmt
 and types = TyInt
            | TyBool
            | TyChan of types
-           | TyFunc of (types list * types)
+           | TyFunc of (types list * (types option))
                                                                        
 and stmt = Seq of stmt * stmt
           | Go of stmt
@@ -21,6 +21,7 @@ and stmt = Seq of stmt * stmt
           | Return of exp
           | FuncCall of string * (exp list)
           | Print of exp
+          | Skip
           
 and exp = And of exp * exp
          | Eq of exp * exp
@@ -35,3 +36,4 @@ and exp = And of exp * exp
          | BConst of bool
          | Var of string
          | FuncExp of string * (exp list)
+         
