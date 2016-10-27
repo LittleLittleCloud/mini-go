@@ -53,6 +53,8 @@ and pp_stmt s l = match s with
   | Return (x)        -> (String.make l ' ') ^ String.concat "" ["Return "; pp_exp x]
   | FuncCall (x, y)   -> (String.make l ' ') ^ String.concat "" [x; "("; (pp_exp_list y); ")"]
   | Print (x)         -> (String.make l ' ') ^ String.concat "" ["Print "; pp_exp x]
+  | Skip              ->""
+  
 
 and pp_exp s = match s with
   | And (x,y)         -> String.concat " && " [pp_exp x; pp_exp y]

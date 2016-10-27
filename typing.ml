@@ -15,6 +15,7 @@ let rec eqTy t1 t2 = match (t1,t2) with
                                           | _           ->false
                                           end
 | _ ->                                    false
+
 (*
 We assume that the type environment is represented as a list of pairs of variables and types
 where variables are represented as strings.
@@ -28,6 +29,8 @@ let lookup el lst = try (Some (snd (List.find (fun (el2,_) -> el = el2) lst))) w
                     | Not_found -> None
                           
 let update el env= let nenv=List.filter (fun a ->fst a<>fst el) env in el::nenv
+
+
 (* Implementation of G |- exp : t where we use 'option' to report failure *)
 let rec inferTyExp env e = match e with
   | IConst i -> Some TyInt
@@ -229,7 +232,7 @@ let rec typeCheckStmt env stmt = match stmt with
                           | Some _ -> Some env
                           | _ -> None
                         end
-
+  |Skip             ->  Some env
 let rec typeCollectProc env proc =match proc with
 | Proc (s,lst,None,stmt) -> 
                         let tmp v e=
@@ -279,21 +282,7 @@ let rec checkProg env prog=match prog with
                     begin
                       match r with
                       | Some t -> r
-                      | None   ->r
+                      | None   -> None
                     end
 
-(*
 
-                      | _ -> expr2
-                    end
-                      
-
-What's still missing are implementations for 
-
-(1) collection of type signatures from functions (procedures)
-
-(2) type checking of procedure bodies, and
-
-(3) type checking of the main program.
-
- *)                                                     
