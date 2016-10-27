@@ -178,7 +178,7 @@ let rec typeCheckStmt env stmt = match stmt with
                           | (Some TyBool,Some _,Some _) -> Some env
                           | _ -> None
                         end
-  | Return e        ->  let r = (inferTyExp env e, lookup "1FUNCALL" env) in 
+  | Return e        ->  let r = (inferTyExp env e, lookup "_RETURN_TYPE_" env) in 
                         begin
                           match r with
                           | (Some t1,Some t2) ->  if eqTy t1 t2 
@@ -205,7 +205,29 @@ let rec typeCheckStmt env stmt = match stmt with
                           | _ -> None
                         end
   |Skip             ->  Some env
-let rec typeCollectProc env proc =match proc with
+let rec typeCollectProc env proc = match proc with
+| Proc (funcId, argLst, ret, stmt) ->  
+                      let addArgToEnv arg tmpEnv =
+                        begin
+                          match arg with
+                          | (Var argId, argTy) -> update (argId, argTy) tmpEnv
+                          | _ -> tmpEnv
+                        end
+                      in
+                        let argEnv = List.fold_right addArgToEnv argLst env in 
+                        let argTyLst = List.map (fun x -> snd x) argLst in
+                        let funcEnv = update (funcId, TyFunc(argTyLst, ret)) argEnv in 
+                        let funcEnvWithRetType = ( match ret with
+                          | Some retTy -> update ("_RETURN_TYPE_", retTy) funcEnv
+                          | None       -> funcEnv )
+                        in
+                        let stmtTy = typeCheckStmt funcEnvWithRetType stmt in 
+                          begin
+                            match stmtTy with
+                            | Some _ -> Some (update (funcId, TyFunc(argTyLst, ret)) env)
+                            | _ -> None
+                          end
+(*                          
 | Proc (s,lst,None,stmt) -> 
                         let tmp v e=
                         begin
@@ -241,7 +263,7 @@ let rec typeCollectProc env proc =match proc with
                           | Some t -> Some (update (s,TyFunc(tylst,Some ty)) env)
                           | _ -> None
                         end
-
+*)
 let rec checkProg env prog=match prog with
 | Prog(lst,stmt) -> let tmp p e=let e1=typeCollectProc e p in 
                                 begin
