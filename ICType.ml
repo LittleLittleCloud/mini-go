@@ -1,39 +1,24 @@
-(* Abstract Syntax Tree (AST) representation of Mini-Go *)
+type irc = IRC of (irc_cmd list)
 
-type prog = Prog of (proc list) * stmt
+and irc_cmd = IRC_Assign of string * irc_exp
+            | IRC_Label of int
+            | IRC_Goto of int
+            | IRC_NonzeroJump of string * int  (* if x L = if x non-zero then jump to L *)
+            | IRC_Param of string
+            | IRC_Call of int * int (* (label, number of parameters *)
+            | IRC_Return of string
+            | IRC_Get of string
 
-and proc = Proc of string * ((exp * types) list) * (types option) * stmt
+and irc_exp = IRC_And of string * string
+            | IRC_Eq of string * string
+            | IRC_Gt of string * string
+            | IRC_Plus of string * string
+            | IRC_Minus of string * string
+            | IRC_Times of string * string
+            | IRC_Division of string * string
+            | IRC_Not of string
+            | IRC_IConst of int
+            | IRC_Var of string            
+            | IRC_Cmp of string       (*if int >0 ans=1 else 0*)
 
-and types = TyInt
-           | TyBool
-           | TyChan of types
-           | TyFunc of (types list * (types option))
-                                                                       
-and stmt = Seq of stmt * stmt
-          | Go of stmt
-          | Transmit of string * exp
-          | RcvStmt of string 
-          | Decl of string * exp
-          | DeclChan of string
-          | Assign of string * exp
-          | While of exp * stmt
-          | ITE of exp * stmt * stmt
-          | Return of exp
-          | FuncCall of string * (exp list)
-          | Print of exp
-          | Skip
-          
-and exp = And of exp * exp
-         | Eq of exp * exp
-         | Gt of exp * exp
-         | Plus of exp * exp
-         | Minus of exp * exp
-         | Times of exp * exp
-         | Division of exp * exp
-         | Not of exp
-         | RcvExp of string
-         | IConst of int
-         | BConst of bool
-         | Var of string
-         | FuncExp of string * (exp list)
-         
+
