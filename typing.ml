@@ -10,11 +10,12 @@ let rec eqTy t1 t2 = match (t1,t2) with
                                             match (s1,s2) with
                                           | (Some t1,Some t2 ) -> (eqTy t1 t2 &&
                                                                   (List.length ts1 == List.length ts2) &&
-                                                                  (List.for_all (fun (t1,t2) -> eqTy t1 t2) (List.combine ts1 ts2))   ) 
-                                          | (None,None) -> true
+                                                                  (List.for_all (fun (t1,t2) -> eqTy t1 t2) (List.combine ts1 ts2))) 
+                                          | (None,None) -> (List.length ts1 == List.length ts2) &&
+                                                                  (List.for_all (fun (t1,t2) -> eqTy t1 t2) (List.combine ts1 ts2))
                                           | _           ->false
                                           end
-| _ ->                                    false
+  | _ ->                                 false
 
 (*
 We assume that the type environment is represented as a list of pairs of variables and types
@@ -46,8 +47,8 @@ let rec inferTyExp env e = match e with
                 begin
                   match r with
                   | (Some a1,Some b1) ->  if eqTy a1 b1
-                                          then  Some a1
-                                          else  None
+                                          then Some TyBool
+                                          else None
                   | _                 ->  None
                 end
                     
@@ -55,50 +56,21 @@ let rec inferTyExp env e = match e with
   | And(a,b) -> let r = (inferTyExp env a,inferTyExp env b) in 
                 begin
                   match r with
-                  | (Some a1,Some b1) ->  if a1==TyBool && b1==TyBool
-                                          then  Some TyBool
-                                          else  None
+                  | (Some TyBool,Some TyBool) -> Some TyBool
                   | _                 ->  None
                 end
 
-  | Gt (a,b) -> let r = (inferTyExp env a,inferTyExp env b) in 
+  | Gt(a,b) -> let r = (inferTyExp env a,inferTyExp env b) in 
                 begin
                   match r with
-                  | (Some a1,Some b1) ->  if a1==TyInt && b1==TyInt
-                                          then  Some TyBool
-                                          else  None
+                  | (Some TyInt,Some TyInt) -> Some TyBool
                   | _                 ->  None
                 end
-  | Plus(a,b) ->let r = (inferTyExp env a,inferTyExp env b) in 
+  | Plus(a,b) | Minus(a,b) | Times(a,b) | Division(a,b) 
+            ->let r = (inferTyExp env a,inferTyExp env b) in 
                 begin
                   match r with
-                  | (Some a1,Some b1) ->  if a1==TyInt && b1==TyInt
-                                          then  Some TyInt
-                                          else  None
-                  | _                 ->  None
-                end
-  | Minus(a,b) ->let r = (inferTyExp env a,inferTyExp env b) in 
-                begin
-                  match r with
-                  | (Some a1,Some b1) ->  if a1==TyInt && b1==TyInt
-                                          then  Some TyInt
-                                          else  None
-                  | _                 ->  None
-                end
-  | Times(a,b) ->let r = (inferTyExp env a,inferTyExp env b) in 
-                begin
-                  match r with
-                  | (Some a1,Some b1) ->  if a1==TyInt && b1==TyInt
-                                          then  Some TyInt
-                                          else  None
-                  | _                 ->  None
-                end
-  | Division(a,b) ->let r = (inferTyExp env a,inferTyExp env b) in 
-                begin
-                  match r with
-                  | (Some a1,Some b1) ->  if a1==TyInt && b1==TyInt
-                                          then  Some TyInt
-                                          else  None
+                  | (Some TyInt,Some TyInt) ->  Some TyInt
                   | _                 ->  None
                 end
   | Not a       -> let r=inferTyExp env a in
@@ -107,7 +79,7 @@ let rec inferTyExp env e = match e with
                   | Some TyBool -> Some TyBool    
                   | _ -> None
                 end
-  | RcvExp  v  ->let r = lookup v env in
+  | RcvExp v  ->let r = lookup v env in
                 begin
                   match r with
                   | Some t -> Some t
@@ -206,7 +178,7 @@ let rec typeCheckStmt env stmt = match stmt with
                           | (Some TyBool,Some _,Some _) -> Some env
                           | _ -> None
                         end
-  | Return e        ->  let r = (inferTyExp env e, lookup "1FUNCALL" env) in 
+  | Return e        ->  let r = (inferTyExp env e, lookup "_RETURN_TYPE_" env) in 
                         begin
                           match r with
                           | (Some t1,Some t2) ->  if eqTy t1 t2 
@@ -233,7 +205,29 @@ let rec typeCheckStmt env stmt = match stmt with
                           | _ -> None
                         end
   |Skip             ->  Some env
-let rec typeCollectProc env proc =match proc with
+let rec typeCollectProc env proc = match proc with
+| Proc (funcId, argLst, ret, stmt) ->  
+                      let addArgToEnv arg tmpEnv =
+                        begin
+                          match arg with
+                          | (Var argId, argTy) -> update (argId, argTy) tmpEnv
+                          | _ -> tmpEnv
+                        end
+                      in
+                        let argEnv = List.fold_right addArgToEnv argLst env in 
+                        let argTyLst = List.map (fun x -> snd x) argLst in
+                        let funcEnv = update (funcId, TyFunc(argTyLst, ret)) argEnv in 
+                        let funcEnvWithRetType = ( match ret with
+                          | Some retTy -> update ("_RETURN_TYPE_", retTy) funcEnv
+                          | None       -> funcEnv )
+                        in
+                        let stmtTy = typeCheckStmt funcEnvWithRetType stmt in 
+                          begin
+                            match stmtTy with
+                            | Some _ -> Some (update (funcId, TyFunc(argTyLst, ret)) env)
+                            | _ -> None
+                          end
+(*                          
 | Proc (s,lst,None,stmt) -> 
                         let tmp v e=
                         begin
@@ -269,7 +263,7 @@ let rec typeCollectProc env proc =match proc with
                           | Some t -> Some (update (s,TyFunc(tylst,Some ty)) env)
                           | _ -> None
                         end
-
+*)
 let rec checkProg env prog=match prog with
 | Prog(lst,stmt) -> let tmp p e=let e1=typeCollectProc e p in 
                                 begin

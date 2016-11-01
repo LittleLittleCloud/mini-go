@@ -1,1 +1,5 @@
 pp
+*.cmo
+*.cmi
+*.swo
+*.swp
