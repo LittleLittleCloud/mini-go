@@ -1,4 +1,4 @@
-open Ictype
+open ICGType
 let rec pp_exp exp =match exp with
 | IRC_And (s1,s2)		-> s1^" && "^s2
 | IRC_Eq(s1,s2)			-> s1^" == "^s2 
@@ -16,7 +16,7 @@ let rec pp_cmd cmd=match cmd with
 |IRC_Label i 			->	string_of_int i^":"
 | IRC_Goto i 			-> 	"jmp "^string_of_int i 
 |IRC_NonzeroJump (s,i) 	->	"if "^s^" ==0"^"jmp "^string_of_int i 
-| IRC_Param s -> 			"Param "^ s
+| IRC_Param s -> 			"Push "^ s
 | IRC_Call (i,j)->			"Call "^string_of_int i ^" "^string_of_int j
 | IRC_RETURN	 ->			"return "
 | IRC_Get s 	->			"pop "^ s 

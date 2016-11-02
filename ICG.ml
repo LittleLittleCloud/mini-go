@@ -1,4 +1,4 @@
-open Ictype
+open ICGType
 open Ast
 let labelSupply = ref 1
 let env1= ref []
@@ -8,7 +8,7 @@ let freshLabel _ =  labelSupply := !labelSupply + 1;
 
 let update (el:(string*int)) env= let nenv=List.filter (fun a ->fst a<>fst el) env in el::nenv
 let lookup (el:(string)) lst = snd(List.find (fun t->(fst t)=el) lst)
-let freshName _=String.concat "" ["IRGtmp" ; string_of_int (freshLabel() )] 
+let freshName _=String.concat ""  ["IRGtmp" ; string_of_int (freshLabel() )] 
 (* (parts) of translation of Booleans (short-circuit evaluation!),
    yields a tuple where first component represents the IRC and
    second component a variable name which is bound to the result *)
@@ -161,7 +161,9 @@ translateV env exp = match exp with
                       @
                       [IRC_Call ((lookup s !env1),(List.length est))]        (*change this *)
                       @
-                      [IRC_Label l],x
+                      [IRC_Label l]
+                      @
+                      [IRC_Get x],x
                       )
 and
 translateE env exp=match exp with
@@ -173,18 +175,30 @@ let rec translateStmt env stmt=match stmt with
 | Seq (s1,s2)     -> (translateStmt env s1)@(translateStmt env s2)
 | Go s            -> [IRC_NewThreadBegin]@(translateStmt env s)@[IRC_NewThreadEnd]
 
-| Transmit(s,exp) |Decl (s,exp) | Assign(s,exp)   ->  let e=translateE env exp in 
-                      (fst e)
-                      @
-                      [IRC_Assign(s,IRC_Var(snd e))]
+| DeclChan s      -> [IRC_Assign(s,IRC_Var("Channel"))]
+| Transmit(s,exp)|Assign(s,exp)|Decl(s,exp)   ->begin
+                      match exp with
+                      | IConst i      ->  [IRC_Assign(s,IRC_IConst i)]
+                      | BConst true   ->  [IRC_Assign(s,IRC_IConst 1)]
+                      | BConst false  ->  [IRC_Assign(s,IRC_IConst 0)]
+                      | Var s1        ->  [IRC_Assign(s,IRC_Var s1)]
+                      | _             -> let e=translateE env exp in 
+                                          (fst e )
+                                          @
+                                          [IRC_Assign(s,IRC_Var(snd e))]
+                    end
 |While (exp,s)    ->  let e=translateE env exp in 
                       let st=translateStmt env s in 
                       let l1=freshLabel() in
+                      let l2=freshLabel() in
                       (fst e)
+                      @
+                      [(IRC_Label l2)]
                       @
                       irc_ZeroJump ((snd e),l1)
                       @
                       st
+                      @[(IRC_Goto l2)]
                       @[(IRC_Label l1)]
 
 | ITE (exp,s1,s2)  -> let e=translateE env exp in 
@@ -270,6 +284,7 @@ let rec translateProc env proc=match proc with
                                 
 
 let rec translateProg env prog = match prog with
-| Prog (pst,stmt) -> let procst=List.fold_left (fun a f->a@(translateProc env f)) [] pst in 
+| Prog (pst,stmt) ->  let exit = freshLabel() in 
+                      let procst=List.fold_left (fun a f->a@(translateProc env f)) [] pst in 
                       let s=translateStmt env stmt in 
-                      IRC(s@procst) 
+                      IRC (s@[(IRC_Goto exit)]@procst@[(IRC_Label exit)])

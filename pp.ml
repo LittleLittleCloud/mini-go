@@ -1,14 +1,22 @@
 (* File pp.ml *)
 open Ast
+open Typing
 open Pp_ast
+open ICG
+open ICGType
+open Pp_print_ICG
 open Pp_fmt
+open FormatAST
 
 let pretty_print ch =
   let lexbuf = Lexing.from_channel ch in
       let result = Parser.parse Lexer.token lexbuf in
-        Printf.printf "AST:\n%s\n\nPretty Print:\n%s\n"
-        (Pp_ast.pp_prog result)
-        (Pp_fmt.pp_prog result);
+      let fmtAST=FormatAST.normalizeProg result in 
+      let icg=ICG.translateProg [] fmtAST in 
+        Printf.printf "AST:\n%s\n\nPretty Print:\n%s\nICG:\n%s\n"
+        (Pp_ast.pp_prog fmtAST)
+        (Pp_fmt.pp_prog fmtAST)
+        (Pp_print_ICG.pp_irc icg);
         flush stdout
 
 let ch = match (Array.length Sys.argv) with
