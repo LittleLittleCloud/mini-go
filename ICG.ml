@@ -85,7 +85,7 @@ let rec translateB env exp = match exp with
                         @[IRC_Label l1;IRC_Assign(x,(IRC_IConst 0));IRC_Label l2],
                       x)
 
-  | Not e1      ->    let r1=translateE env e1 in 
+  | Not e1      ->    let r1=translateB env e1 in 
                       let x = freshName() in 
                       ((fst r1)
                         @
