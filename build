@@ -11,5 +11,6 @@ ocamlc -c -g ICGType.ml
 ocamlc -c -g formatAST.ml
 ocamlc -c -g pp_print_ICG.ml
 ocamlc -c -g ICG.ml
+ocamlc -c -g renameAST.ml
 ocamlc -c -g pp.ml
-ocamlc -g -o pp ast.cmo ICGType.cmo ICG.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo pp.cmo
+ocamlc -g -o pp ast.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo pp.cmo
