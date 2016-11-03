@@ -16,7 +16,12 @@ let rec normalizeExp e = match e with
                     let r2 = normalizeExp e2 in
                     (Seq (fst r1, fst r2),
                      Gt (snd r1, snd r2))                      
-                      
+
+  | Eq (e1, e2) ->  let r1 = normalizeExp e1 in
+                    let r2 = normalizeExp e2 in
+                    (Seq (fst r1, fst r2),
+                     Eq (snd r1, snd r2))             
+
   | Plus (e1, e2) -> let r1 = normalizeExp e1 in
                      let r2 = normalizeExp e2 in
                      (Seq (fst r1, fst r2),
