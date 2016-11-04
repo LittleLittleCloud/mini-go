@@ -2,8 +2,8 @@
 open Ast
 open Typing
 open Pp_ast
-open ICG
 open ICGType
+open ICG
 open Pp_print_ICG
 open Pp_fmt
 open FormatAST
@@ -12,7 +12,9 @@ let pretty_print ch =
   let lexbuf = Lexing.from_channel ch in
       let result = Parser.parse Lexer.token lexbuf in
       let fmtAST=FormatAST.normalizeProg result in 
-      let renameAST=RenameAST.renameProg [] fmtAST in 
+      let renameAST=RenameAST.renameProg [] fmtAST in
+      let i=RenameAST.getNameSupply() in 
+      ICG.chgLabelSupply i;
       let icg=ICG.translateProg [] renameAST in 
         Printf.printf "AST:\n%s\n%s\n\nPretty Print:\n%s\nICG:\n%s\n"
         (Pp_ast.pp_prog result)

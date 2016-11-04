@@ -68,7 +68,7 @@ and pp_exp s = match s with
   | RcvExp (x)        -> String.concat "<- " [""; x]
   | IConst (x)        -> string_of_int x
   | BConst (x)        -> string_of_bool x
-  | Var (x)           -> "\""^x^"\""
+  | Var (x)           -> x
   | FuncExp(x, y)     -> String.concat "" [x; "("; (pp_exp_list y); ")"]
 
 and pp_exp_list s = match s with

@@ -2,13 +2,14 @@ open ICGType
 open Ast
 let labelSupply = ref 1
 let env1= ref []
+let chgLabelSupply x =labelSupply:=x
 let freshLabel _ =  labelSupply := !labelSupply + 1;
                     !labelSupply
 
 
 let update (el:(string*int)) env= let nenv=List.filter (fun a ->fst a<>fst el) env in el::nenv
 let lookup (el:(string)) lst = snd(List.find (fun t->(fst t)=el) lst)
-let freshName _=String.concat ""  ["IRGtmp" ; string_of_int (freshLabel() )] 
+let freshName _=String.concat ""  ["$";string_of_int (freshLabel() )] 
 (* (parts) of translation of Booleans (short-circuit evaluation!),
    yields a tuple where first component represents the IRC and
    second component a variable name which is bound to the result *)
@@ -221,9 +222,12 @@ let rec translateStmt env stmt=match stmt with
                       [(IRC_Label l2)]
 
 | Return exp       -> let e=translateE env exp in 
+                      let rddr=freshName() in 
                       (fst e)
+                      @[IRC_Get rddr]
+                      @[IRC_Param (snd e)]
                       @
-                      [IRC_RETURNE (snd e)]
+                      [IRC_GotoE rddr]
 
 | FuncCall (s,est)  ->let l=freshLabel() in  
                       
@@ -268,7 +272,7 @@ let rec translateProc env proc=match proc with
 
 | Proc(s,lst,None,stmt)     ->  let l=freshLabel() in
                                 env1:=update (s,l) !env1;
-                                
+                                let rddr=freshName() in
                                 let stmt1=translateStmt env stmt in 
                                 let lst1=List.rev lst in 
                                 let lstS=List.map (fun s->let e=translateE env (fst s) in
@@ -280,7 +284,9 @@ let rec translateProc env proc=match proc with
                                 @
                                 stmt1
                                 @
-                                [IRC_RETURN]
+                                [IRC_Get rddr]
+                                @
+                                [IRC_GotoE rddr]
                                 
 
 let rec translateProg env prog = match prog with

@@ -2,23 +2,10 @@ open Ast
 
 (* equality among types *)
 let nameSupply=ref 0
-let rec eqTy t1 t2 = match (t1,t2) with
-  | (TyInt, TyInt) -> true
-  | (TyBool, TyBool) -> true
-  | (TyChan t1, TyChan t2) -> eqTy t1 t2
-  | (TyFunc (ts1, s1), TyFunc (ts2,s2)) -> 
-                                          begin
-                                            match (s1,s2) with
-                                          | (Some t1,Some t2 ) -> (eqTy t1 t2 &&
-                                                                  (List.length ts1 == List.length ts2) &&
-                                                                  (List.for_all (fun (t1,t2) -> eqTy t1 t2) (List.combine ts1 ts2))) 
-                                          | (None,None) -> (List.length ts1 == List.length ts2) &&
-                                                                  (List.for_all (fun (t1,t2) -> eqTy t1 t2) (List.combine ts1 ts2))
-                                          | _           ->false
-                                          end
-  | _ ->                                 false
+let getNameSupply _ =let x = !nameSupply in x
+
 let freshName _ =  nameSupply := !nameSupply + 1;
-                   String.concat "" [string_of_int (!nameSupply )] 
+                   String.concat "" ["$";string_of_int (!nameSupply )] 
 (*
 We assume that the type environment is represented as a list of pairs of variables and types
 where variables are represented as strings.
