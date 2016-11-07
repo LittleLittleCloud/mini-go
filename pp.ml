@@ -8,6 +8,10 @@ open Pp_print_ICG
 open Pp_fmt
 open FormatAST
 open RenameAST
+open VMType
+open VMC
+open Pp_print_VMC
+open VM
 let pretty_print ch =
   let lexbuf = Lexing.from_channel ch in
       let result = Parser.parse Lexer.token lexbuf in
@@ -16,12 +20,15 @@ let pretty_print ch =
       let i=RenameAST.getNameSupply() in 
       ICG.chgLabelSupply i;
       let icg=ICG.translateProg [] renameAST in 
-        Printf.printf "AST:\n%s\n%s\n\nPretty Print:\n%s\nICG:\n%s\n"
+      let vmc=VMC.genVMC icg in 
+        Printf.printf "AST:\n%s\n\n%s\nPretty Print:\n%s\nICG:\n%s\nVM:\n%s\n"
         (Pp_ast.pp_prog result)
         
         (Pp_fmt.pp_prog fmtAST)
         (Pp_fmt.pp_prog renameAST)
-        (Pp_print_ICG.pp_irc icg);
+        (Pp_print_ICG.pp_irc icg)
+        (Pp_print_VMC.pp_vmc vmc);
+        VM.run vmc;
         flush stdout
 
 let ch = match (Array.length Sys.argv) with

@@ -5,7 +5,7 @@ let nameSupply=ref 0
 let getNameSupply _ =let x = !nameSupply in x
 
 let freshName _ =  nameSupply := !nameSupply + 1;
-                   String.concat "" ["$";string_of_int (!nameSupply )] 
+                   String.concat "" [string_of_int (!nameSupply )] 
 (*
 We assume that the type environment is represented as a list of pairs of variables and types
 where variables are represented as strings.

@@ -21,9 +21,10 @@ let rec pp_cmd cmd=match cmd with
 | IRC_Get s 	->			"pop "^ s 
 | IRC_NewThreadBegin 	->  "NewThreadBegin" 
 | IRC_NewThreadEnd 		->	"NewThreadEnd"
+| IRC_Thread irc 		->  "NewThreadBegin\n"^pp_irc irc^"\nNewThreadEnd"
 | IRC_GotoE s 			->	"jmp " ^s
 | IRC_Print s 			->	"print " ^s
 
 
-let rec pp_irc  _irc=match _irc with
+and pp_irc  _irc=match _irc with
 | IRC lst-> String.concat "\n" (List.map pp_cmd lst)

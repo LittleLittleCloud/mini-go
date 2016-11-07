@@ -3,6 +3,7 @@ open Ast
 let labelSupply = ref 1
 let env1= ref []
 let env2=ref []
+let env3=ref []
 let chgLabelSupply x =labelSupply:=x
 let freshLabel _ =  labelSupply := !labelSupply + 1;
                     !labelSupply
@@ -177,7 +178,7 @@ let rec translateStmt env stmt=match stmt with
 | Seq (s1,s2)     -> (translateStmt env s1)@(translateStmt env s2)
 | Go s            -> [IRC_NewThreadBegin]@(translateStmt env s)@[IRC_NewThreadEnd]
 
-| DeclChan s      -> [IRC_Assign(s,IRC_Var("Channel"))]
+| DeclChan s      -> [IRC_Assign(s,IRC_Var(s))]
 | Transmit(s,exp)|Assign(s,exp)|Decl(s,exp)   ->begin
                       match exp with
                       | IConst i      ->  [IRC_Assign(s,IRC_IConst i)]
@@ -224,10 +225,13 @@ let rec translateStmt env stmt=match stmt with
 
 | Return exp       -> let e=translateE env exp in 
                       let rddr=freshName() in 
+
                       (fst e)
+                      @ !env3
                       @[IRC_Get rddr]
                       @[IRC_Param (snd e)]
                       @[IRC_Param rddr]
+                      @ !env2
                       @
                       [IRC_GotoE rddr]
 
@@ -257,16 +261,39 @@ let rec translateProc env proc=match proc with
                                 
 
 | Proc (s,lst,Some ty,stmt) ->  let l=freshLabel() in  
+                                let tmp= !labelSupply in
                                 env1:=update (s,l) !env1;
                                 let stmt1=translateStmt env stmt in 
+                                let vars=List.concat (List.map (fun f->match f with
+                                                                        | IRC_Assign(s,_) -> [s]
+                                                                        |_  ->[]) stmt1) in 
+
+
                                 let lst1=List.rev lst in 
                                 let lstS=List.map (fun s->let e=translateE env (fst s) in
                                                           IRC_Get (snd e)) lst1 in 
-                                
-                                
+                                let st=List.map (fun f->match f with
+                                | IRC_Get s -> s) lstS in 
+                                let st=List.sort_uniq (fun f1 f2->(int_of_string f1)-int_of_string f2 ) (List.append st vars) in 
+                                let savebuf=List.map (fun s->IRC_Assign(freshName(),IRC_Var s)) st in 
+                                let pushStack=List.map (fun s->match s with
+                                | IRC_Assign(s1,IRC_Var s2) -> IRC_Param s1) savebuf in 
+                                let popbuf=List.map (fun s->match s with
+                                | IRC_Assign(s1,IRC_Var s2) -> IRC_Get s1) (List.rev savebuf) in
+
+                                let load = List.map (fun s->match s with
+                                | IRC_Assign(s1,IRC_Var s2) -> IRC_Assign(s2,IRC_Var s1)) savebuf in 
+                                env2:=load;
+                                env3:=popbuf;
+                                labelSupply:=tmp;
+                                let stmt1=translateStmt env stmt in 
                                 [IRC_Label l]
                                 @
+                                savebuf
+                                @
                                 lstS
+                                @
+                                pushStack
                                 @
                                 stmt1
                                 
