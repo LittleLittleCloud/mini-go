@@ -53,9 +53,11 @@ let rec normalizeExp e = match e with
   (* Introduce Skip for convenience, maybe should have
      represented a sequence of commands as a list ... *)
                            
-  | IConst i          -> (Skip, IConst i)
+  | IConst i          -> let r=freshName() in 
+                        (Decl(r, IConst i),Var r)
                            
-  | BConst b          -> (Skip, BConst b)
+  | BConst b          -> let r=freshName() in 
+                        (Decl(r, BConst b),Var r)
 
   | Var x              -> (Skip, Var x)
 
@@ -67,7 +69,6 @@ let rec normalizeExp e = match e with
                           let y = freshName() in
                           (Seq (c, Decl (y, FuncExp (x,xs))),
                            Var y)
-
 let rec normalizeStmt s = match s with
   | Seq (s1,s2) -> Seq (normalizeStmt s1, normalizeStmt s2)
   | Go s        -> Go (normalizeStmt s)
@@ -88,7 +89,8 @@ let rec normalizeStmt s = match s with
   | FuncCall (x, es) -> let rs = List.map normalizeExp es in
                         let c = List.fold_left (fun a -> fun b -> Seq (a,b)) Skip (List.map fst rs) in 
                         let xs = List.map snd rs in
-                        Seq (c, FuncCall (x,xs))
+                        let tmp=freshName() in 
+                        Seq (c, Decl(tmp, FuncExp(x,xs)))
   | Print e       -> let r = normalizeExp e in
                      Seq (fst r, Print (snd r))
   | Skip          -> Skip
