@@ -22,8 +22,7 @@ let pretty_print ch =
       let icg=ICG.translateProg [] renameAST in 
       let vmc=VMC.genVMC icg in 
         Printf.printf "AST:\n%s\n\n%s\nPretty Print:\n%s\nICG:\n%s\nVM:\n%s\n"
-        (Pp_ast.pp_prog result)
-        
+        (Pp_ast.pp_prog result) 
         (Pp_fmt.pp_prog fmtAST)
         (Pp_fmt.pp_prog renameAST)
         (Pp_print_ICG.pp_irc icg)
