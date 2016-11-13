@@ -26,19 +26,9 @@ let rec translateB env exp = match exp with
                    ([IRC_Assign (x, IRC_IConst 1)], x)
   | BConst false -> let x = freshName() in
                     ([IRC_Assign (x, IRC_IConst 0)], x)                      
-  | And (e1, e2) -> (* 
-                       e1.code;
-                       if !e1.result goto l1
-                       e2.code;
-                       x = e2.result;
-                       goto l2;
-                       l1:
-                       x = 0;             Booleans represented as integers
-                       l2:
-                     *)
-
-                    let r1 = translateB env e1 in
-                    let r2 = translateB env e2 in
+  | And (e1, e2) -> 
+                    let r1 = translateE env e1 in
+                    let r2 = translateE env e2 in
                     let x = freshName() in
                     let l1 = freshLabel() in
                     let l2 = freshLabel() in                   
@@ -86,16 +76,15 @@ let rec translateB env exp = match exp with
                         @irc_ZeroJump(tmp1,l1)
                         @[IRC_Assign(x,IRC_IConst 1);IRC_Goto l2]
                         @[IRC_Label l1;IRC_Assign(x,(IRC_IConst 0));IRC_Label l2],
-                      x)
+                      x)  
 
-  | Not e1      ->    let r1=translateB env e1 in 
+  | Not e1      ->    let r1=translateE env e1 in 
                       let x = freshName() in 
                       ((fst r1)
                         @
                         [IRC_Assign(x,IRC_Not(snd r1))]
                         ,x
                       )
-
 
 and 
 translateV env exp = match exp with
@@ -143,7 +132,7 @@ translateV env exp = match exp with
                       [IRC_Assign(x,IRC_Division((snd r1),snd r2))],
                       x
                     )  
-| Var s         ->  ([IRC_Assign(s,IRC_Var(s))],s)
+| Var s         ->  ([],s)
 | RcvExp s      ->  let x=freshName() in 
                     ([IRC_Assign(x,IRC_Var(s))],x)
 
@@ -176,7 +165,8 @@ translateE env exp=match exp with
 
 let rec translateStmt env stmt=match stmt with
 | Seq (s1,s2)     -> (translateStmt env s1)@(translateStmt env s2)
-| Go s            -> [IRC_NewThreadBegin]@(translateStmt env s)@[IRC_NewThreadEnd]
+| Go s            -> let t=translateStmt env s in 
+                      [IRC_Thread (IRC t)]
 
 | DeclChan s      -> [IRC_Assign(s,IRC_Var(s))]
 | Transmit(s,exp)|Assign(s,exp)|Decl(s,exp)   ->begin
@@ -194,10 +184,11 @@ let rec translateStmt env stmt=match stmt with
                       let st=translateStmt env s in 
                       let l1=freshLabel() in
                       let l2=freshLabel() in
-                      (fst e)
-                      @
+                      
                       [(IRC_Label l2)]
+                      @(fst e)
                       @
+                      
                       irc_ZeroJump ((snd e),l1)
                       @
                       st
@@ -314,6 +305,10 @@ let rec translateProc env proc=match proc with
                                 stmt1
                                 @
                                 [IRC_Get rddr]
+                                @
+                                [IRC_Param rddr]
+                                @
+                                [IRC_Param rddr]
                                 @
                                 [IRC_GotoE rddr]
                                 

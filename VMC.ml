@@ -10,9 +10,15 @@ let setLine _= lineNum:=!lineNum+1;
 let rec genVMCS icg=match icg with
 | IRC_Assign (s,exp)-> 	let e=genVMCE exp in 
 						let vmc= 
+						[Lock (int_of_string s)]
+						@
 						e
 						@
-						[AssignFromStack(1,int_of_string s);PopS] in 
+						[AssignFromStack(1,int_of_string s)]
+						@
+						[Unlock (int_of_string s)]
+						@
+						[PopS] in 
 						lineNum:=!lineNum+List.length vmc;
 						vmc
 | IRC_Label i 		-> 	label:=update (string_of_int i,!lineNum) !label;[]
@@ -54,9 +60,13 @@ let rec genVMCS icg=match icg with
 							in 
 							lineNum:=!lineNum+List.length vmc;
 							vmc
-| IRC_Thread irc 		->  let vmc=genVMCIRC irc in 
-							lineNum:=!lineNum+List.length vmc;
-							[Thread vmc]
+| IRC_Thread irc 		->  let i= !lineNum in 
+							lineNum:=0;
+							let vmc=genVMCIRC (irc) in 
+							let vmc=[Thread (vmc@[Halt])] in 
+
+							lineNum:=i+List.length vmc;
+							vmc
 | IRC_Print s 			->	let vmc = 
 							[ PushToStack (int_of_string s)]
 							@
@@ -66,60 +76,94 @@ let rec genVMCS icg=match icg with
 							vmc
 and genVMCE exp =match exp with
 | IRC_And(s1,s2) 		-> 	let vmc=
+							[Lock (int_of_string s1);Lock (int_of_string s2)]
+							@
 							[PushToStack (int_of_string s1)]
 							@
 							[PushToStack (int_of_string s2)]
 							@
 							[And]
+							@
+							[Unlock (int_of_string s1);Unlock (int_of_string s2)]
 							in
 							vmc
 | IRC_Eq(s1,s2)			->	let vmc=
+							[Lock (int_of_string s1);Lock (int_of_string s2)]
+							@							
 							[PushToStack (int_of_string s1)]
 							@
 							[PushToStack (int_of_string s2)]
 							@
 							[Eq]
+							@
+							[Unlock (int_of_string s1);Unlock (int_of_string s2)]
+
 							in
 							vmc
 | IRC_Gt(s1,s2)			->	let vmc=
+							[Lock (int_of_string s1);Lock (int_of_string s2)]
+							@
 							[PushToStack (int_of_string s1)]
 							@
 							[PushToStack (int_of_string s2)]
 							@
 							[Gt]
+							@
+							[Unlock (int_of_string s1);Unlock (int_of_string s2)]
+
 							in
 							vmc
 | IRC_Plus(s1,s2)			->	let vmc=
+							[Lock (int_of_string s1);Lock (int_of_string s2)]
+							@
 							[PushToStack (int_of_string s1)]
 							@
 							[PushToStack (int_of_string s2)]
 							@
 							[Add]
+							@
+							[Unlock (int_of_string s1);Unlock (int_of_string s2)]
+
 							in
 							vmc
 | IRC_Minus(s1,s2)			->	let vmc=
+							[Lock (int_of_string s1);Lock (int_of_string s2)]
+							@
 							[PushToStack (int_of_string s1)]
 							@
 							[PushToStack (int_of_string s2)]
 							@
 							[Sub]
+							@
+							[Unlock (int_of_string s1);Unlock (int_of_string s2)]
+
 							in
 							vmc
 
-| IRC_Division(s1,s2)			->	let vmc=
+| IRC_Division(s1,s2)		->	let vmc=
+							[Lock (int_of_string s1);Lock (int_of_string s2)]
+							@
 							[PushToStack (int_of_string s1)]
 							@
 							[PushToStack (int_of_string s2)]
 							@
 							[Div]
+							@
+							[Unlock (int_of_string s1);Unlock (int_of_string s2)]
+
 							in
 							vmc
 | IRC_Times(s1,s2)			->	let vmc=
+							[Lock (int_of_string s1);Lock (int_of_string s2)]
+							@
 							[PushToStack (int_of_string s1)]
 							@
 							[PushToStack (int_of_string s2)]
 							@
 							[Mult]
+							@
+							[Unlock (int_of_string s1);Unlock (int_of_string s2)]
+
 							in
 							vmc
 
@@ -142,11 +186,16 @@ and genVMCIRC irc=	match irc with
 						let vmc=List.concat a in 
 						vmc	
 
-let updateLabel vmc=match vmc with
+let rec updateLabel vmc=match vmc with
 | NonZeroI s 	->let i=lookup s !label in 
 					NonZero i
 | JumpI s 		-> let i = lookup s !label in 
 					Jump i
+|Thread s 		->	let i = !lineNum in 
+					lineNum := 0; 
+					let r=List.map updateLabel s in
+					lineNum:=i;
+					Thread r
 | vmc 			-> vmc
 
 let genVMC icg = let vmci = genVMCIRC icg in 

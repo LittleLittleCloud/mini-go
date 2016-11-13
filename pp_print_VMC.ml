@@ -5,6 +5,7 @@ let rec pp_cmd cmd=match cmd with
 | PopS			->"PopS"
 | Add			->"Add"
 | Sub  			->"Sub"
+| Mult  			->"Mult"
 | Div -> "Div"
 | Halt	->"Halt"
 | Lt ->		"Lt"
@@ -17,6 +18,7 @@ let rec pp_cmd cmd=match cmd with
 | Output -> "Output"
 | NonZero i -> "NonZero "^string_of_int i 
 | Zero i -> 	"Zero "^ string_of_int i 
+| NonZero i ->	"NonZero "^ string_of_int i 
 | Jump i -> 	"Jump"^ string_of_int i 
 | Jr -> 		"Jr"
 | Assign (i1,i2) -> "$"^string_of_int i1 ^" = "^string_of_int i2

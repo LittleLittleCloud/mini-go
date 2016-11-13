@@ -3,6 +3,7 @@
 type prog = Prog of (proc list) * stmt
 
 and proc = Proc of string * ((exp * types) list) * (types option) * stmt
+            |Proc1 of string * ((exp * types) list) * (types option) * stmt
 
 and types = TyInt
            | TyBool
@@ -21,6 +22,9 @@ and stmt = Seq of stmt * stmt
           | Return of exp
           | FuncCall of string * (exp list)
           | Print of exp
+          | WHILE of exp * stmt
+          | ITE1 of exp * stmt * stmt
+
           | Skip
           
 and exp = And of exp * exp

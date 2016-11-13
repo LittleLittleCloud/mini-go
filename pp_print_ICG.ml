@@ -19,8 +19,6 @@ let rec pp_cmd cmd=match cmd with
 | IRC_Param s -> 			"Push "^ s
 | IRC_Call (i,j)->			"Call "^string_of_int i ^" "^string_of_int j
 | IRC_Get s 	->			"pop "^ s 
-| IRC_NewThreadBegin 	->  "NewThreadBegin" 
-| IRC_NewThreadEnd 		->	"NewThreadEnd"
 | IRC_Thread irc 		->  "NewThreadBegin\n"^pp_irc irc^"\nNewThreadEnd"
 | IRC_GotoE s 			->	"jmp " ^s
 | IRC_Print s 			->	"print " ^s

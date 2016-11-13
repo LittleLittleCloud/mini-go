@@ -49,8 +49,10 @@ let initState cs = { mem = mkMem();
 let inc r = r := !r + 1
 let dec r = r := !r - 1 
                      
-                    
-let singleStep id mem memLock t = match (List.nth t.code !(t.pc)) with
+let debug txt = print_endline txt;
+                Printf.printf "\n"
+
+let singleStep st id mem memLock t = match (List.nth t.code !(t.pc)) with
   | Halt ->   true
   | PushS i -> t.stack.(!(t.sp)) <- i;
                inc t.pc;
@@ -173,6 +175,7 @@ let singleStep id mem memLock t = match (List.nth t.code !(t.pc)) with
                 then true
                 else (memLock.(loc) <- {locked = true; threadID = id};
                       inc t.pc;
+
                       false)
 
   (* only the owner can unlock a memory cell, multiple unlock yield failure (true) *)                       
@@ -199,17 +202,26 @@ let singleStep id mem memLock t = match (List.nth t.code !(t.pc)) with
   | AssignFromEnv (relPos,loc) -> inc t.pc;
                                   mem.(loc) <- t.env.(!(t.ep) - relPos);
                                   false              
-                       
-let debug txt = Printf.printf txt;
-                Printf.printf "\n"
+  | Thread lst                 -> let t1=mkThread lst in 
+                                  st.threads:= List.append !(st.threads) [t1];
+                                  (* debug (string_of_int (List.length !(st.threads))); *)
+                                  inc t.pc;
+                                  false
+
+
+
                 
 let run cs = let st = initState cs in
              let stop = ref false in
              while not !stop do
                   stop := true;
                   for i = 0 to List.length !(st.threads) - 1 do 
-                    if not (singleStep i st.mem st.memLock (List.nth !(st.threads) i))
-                    then stop := false
+                  (* let singleStep id mem memLock t  *)
+
+                    if not (singleStep st i st.mem st.memLock (List.nth !(st.threads) i))
+                    then stop := false ;
+                    (* debug ("fuck"^ string_of_int i); *)
+
                   done;
              done;
              st
