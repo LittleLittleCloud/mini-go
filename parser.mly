@@ -35,6 +35,7 @@ block:
   | LBRACE statement_list RBRACE  { $2 }
 ;
 statement_list:
+  |                                         {Skip}
   | statement                               { $1 }
   | statement SEMICOLON statement_list      { Seq ($1, $3) }
 ;

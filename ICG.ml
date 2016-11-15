@@ -50,16 +50,16 @@ let rec translateB env exp = match exp with
                       let r2=translateE env e2 in 
                       let tmp=freshName() in 
                       let x = freshName() in 
-                      let l1=freshLabel() in 
-                      let l2 = freshLabel() in
                       ((fst r1)
                         @
                         (fst r2)
-                        @
+                        (* @
                         [IRC_Assign(tmp,IRC_Minus((snd r1),(snd r2)))]
                         @(irc_ZeroJump (tmp,l1) )
                         @[IRC_Assign(x,IRC_IConst 0);IRC_Goto l2]
-                        @[IRC_Label l1;IRC_Assign(x,IRC_IConst 1);IRC_Label l2],
+                        @[IRC_Label l1;IRC_Assign(x,IRC_IConst 1);IRC_Label l2], *)
+                        @
+                        [IRC_Assign(x, IRC_Eq(snd r1,snd r2))],
                       x)
 
   | Gt (e1,e2)  ->    let r1=translateE env e1 in 
