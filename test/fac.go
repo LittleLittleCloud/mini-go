@@ -1,8 +1,7 @@
 func fac(x int) int {
-	if(x>2){
+	if(x>1){
 		t:=fac(x-1);
-		b:=fac(x-2);
-		return t+b
+		return t*x
 	}else{
 		return 1
 
