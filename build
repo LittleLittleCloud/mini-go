@@ -18,3 +18,7 @@ ocamlc -c -g pp_print_ICG.ml
 ocamlc -c -g renameAST.ml
 ocamlc -c -g pp.ml
 ocamlc -g -o pp ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo pp.cmo
+ocamlc -c -g compile.ml
+ocamlc -g -o compile ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo compile.cmo
+ocamlc -c -g compile_and_run.ml
+ocamlc -g -o compile_and_run ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo compile_and_run.cmo
