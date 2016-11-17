@@ -1,5 +1,12 @@
 CS4212 Project 2 Mini-Go
 ===
+
+Team Members
+---
+ - Tam Wai Lun (A0033729A)
+ - Qiu Guangju (A0148544Y)
+ - Zhang Xiaoyun (A0152851H)
+
 How to build compiler
 ---
 To build our mini-go compiler, run the following script in command line
