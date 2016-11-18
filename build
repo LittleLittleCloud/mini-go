@@ -1,24 +1,24 @@
 ocamllex lexer.mll       # generates lexer.ml
 ocamlyacc parser.mly     # generates parser.ml and parser.mli
-ocamlc -c -g ast.ml
-ocamlc -c -g VMType.ml 
-ocamlc -c -g VM.ml 
-ocamlc -c -g ICGType.ml
-ocamlc -c -g ICG.ml
-ocamlc -c -g pp_print_VMC.ml 
-ocamlc -c -g VMC.ml 
-ocamlc -c -g pp_ast.ml
-ocamlc -c -g pp_fmt.ml
-ocamlc -c -g parser.mli
-ocamlc -c -g lexer.ml
-ocamlc -c -g parser.ml
-ocamlc -c -g typing.ml
-ocamlc -c -g formatAST.ml
-ocamlc -c -g pp_print_ICG.ml
-ocamlc -c -g renameAST.ml
-ocamlc -c -g pp.ml
-ocamlc -g -o pp ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo pp.cmo
-ocamlc -c -g compile.ml
-ocamlc -g -o compile ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo compile.cmo
-ocamlc -c -g compile_and_run.ml
-ocamlc -g -o compile_and_run ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo compile_and_run.cmo
+ocamlc -c -g -w -8-10-11 ast.ml
+ocamlc -c -g -w -8-10-11 VMType.ml 
+ocamlc -c -g -w -8-10-11 VM.ml 
+ocamlc -c -g -w -8-10-11 ICGType.ml
+ocamlc -c -g -w -8-10-11 ICG.ml
+ocamlc -c -g -w -8-10-11 pp_print_VMC.ml 
+ocamlc -c -g -w -8-10-11 VMC.ml 
+ocamlc -c -g -w -8-10-11 pp_ast.ml
+ocamlc -c -g -w -8-10-11 pp_fmt.ml
+ocamlc -c -g -w -8-10-11 parser.mli
+ocamlc -c -g -w -8-10-11 lexer.ml
+ocamlc -c -g -w -8-10-11 parser.ml
+ocamlc -c -g -w -8-10-11 typing.ml
+ocamlc -c -g -w -8-10-11 formatAST.ml
+ocamlc -c -g -w -8-10-11 pp_print_ICG.ml
+ocamlc -c -g -w -8-10-11 renameAST.ml
+ocamlc -c -g -w -8-10-11 pp.ml
+ocamlc -g -w -8-10-11 -o pp ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo pp.cmo
+ocamlc -c -g -w -8-10-11 compile.ml
+ocamlc -g -w -8-10-11 -o compile ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo compile.cmo
+ocamlc -c -g -w -8-10-11 compile_and_run.ml
+ocamlc -g -w -8-10-11 -o compile_and_run ast.cmo typing.cmo VMType.cmo VM.cmo renameAST.cmo ICGType.cmo ICG.cmo pp_print_VMC.cmo VMC.cmo pp_print_ICG.cmo pp_ast.cmo pp_fmt.cmo formatAST.cmo lexer.cmo parser.cmo compile_and_run.cmo

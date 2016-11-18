@@ -48,7 +48,6 @@ let rec translateB env exp = match exp with
                     
   | Eq (e1,e2)  ->    let r1=translateE env e1 in 
                       let r2=translateE env e2 in 
-                      let tmp=freshName() in 
                       let x = freshName() in 
                       ((fst r1)
                         @

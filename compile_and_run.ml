@@ -24,12 +24,10 @@ let pretty_print ch =
                     ICG.chgLabelSupply i;
                     let icg=ICG.translateProg [] renameAST in 
                     let vmc=VMC.genVMC icg in 
-                      Printf.printf "VM Code:\n%s\nOutput:\n"
-                      (Pp_print_VMC.pp_vmc vmc);
                       VM.run vmc;
                       flush stdout
 
-      | None      -> print_endline "error";
+      | None      -> print_endline "unmatch type";
                       VM.run [Halt];
                       flush stdout
 

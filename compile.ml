@@ -29,7 +29,7 @@ let pretty_print ch =
                       (*VM.run vmc;*)
                       flush stdout
 
-      | None      -> print_endline "error";
+      | None      -> print_endline "type unmatch";
                       VM.run [Halt];
                       flush stdout
 

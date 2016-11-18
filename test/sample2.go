@@ -22,5 +22,13 @@
 	}else{
 		y=y+1
 	};
-	print z
+	print z;
+	z=4;
+	while z>0{
+		if z>1{
+			print z;
+			z=z-1
+		}else{};
+		z=z-1
+	}
 }
