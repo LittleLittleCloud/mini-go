@@ -56,3 +56,11 @@ This compiler should meet all the requirements in the project description. In ad
 But we implemented the remaining required functions and it passed all our test set so far (see sample programs included in test directory).
 
 Tip: As the compiler only supports the '>', '+', '-', '*', '/', '==', '&&' and '!', make sure there is no "<", '<=' or ">=" in the mini-go code. Otherwise, it won't pass the parser.
+
+one small bug is that because the mini-go only support the int operation, so the operator * and / don't satisfied with the commutative law. for example
+a:=3;
+b:=1;
+c:=4;
+d:=2;
+and the result of (a+b)*c/d is 3, while the expective answer is 6.
+it could be solved by adding float type.
