@@ -243,6 +243,8 @@ let rec translateStmt env stmt=match stmt with
                       [IRC_Label l]
 
 | Print exp       -> let e=translateE env exp in 
+                      (fst e)
+                      @
                       [IRC_Print (snd e)]
 |_                ->[]
 
